@@ -6,10 +6,10 @@ import com.mchange.sc.v1.consuela.trie._;
 import org.ethereum.datasource.KeyValueDataSource;
 import org.ethereum.trie.{Trie => EJTrie};
 
-class EthereumJTrie( kvds : KeyValueDataSource, rootHash : EthHash ) extends EJTrie {
+class EthereumJTrie( kvds : KeyValueDataSource, rootHash : EthHash, secure : Boolean ) extends EJTrie {
 
-  def this( kvds : KeyValueDataSource, rootHashBytes : Array[Byte] ) = this( kvds, EthHash.withBytes( rootHashBytes ) );
-  def this( kvds : KeyValueDataSource )                              = this( kvds, EthTrieDb.EmptyHash );
+  def this( kvds : KeyValueDataSource, rootHashBytes : Array[Byte], secure : Boolean ) = this( kvds, EthHash.withBytes( rootHashBytes ), secure );
+  def this( kvds : KeyValueDataSource, secure : Boolean )                              = this( kvds, EthTrieDb.EmptyHash, secure );
 
   private type EthNode = EmbeddableEthStylePMTrie.Node[Nibble,Seq[Byte],EthHash]
   //type InnerTrie = PMTrie[Nibble,Seq[Byte],EthHash]; 
@@ -17,10 +17,10 @@ class EthereumJTrie( kvds : KeyValueDataSource, rootHash : EthHash ) extends EJT
   private val innerDb = new InnerDb;
 
   // MT: protected with this' lock
-  private var innerTrie : InnerTrie  =  new InnerTrie( rootHash );
+  private var innerTrie : GenericEthTrie = if ( secure ) new InnerSecureTrie( rootHash ) else new InnerTrie( rootHash );
 
   // MT: protected with this' lock
-  private var lastCheckpoint : InnerTrie  =  innerTrie;
+  private var lastCheckpoint : GenericEthTrie = innerTrie;
 
   private def _k( a : Array[Byte] ) : IndexedSeq[Nibble] = toNibbles( a.toSeq );
 
@@ -57,7 +57,7 @@ class EthereumJTrie( kvds : KeyValueDataSource, rootHash : EthHash ) extends EJT
       fromRLP( nodeBytes )
     }
     def put( nodes : Map[EthHash,EthNode] ) : Unit = {
-      // this is a dangerous constructions, as Java byte[] is not a good hash key,
+      // this is a dangerous construction, as Java byte[] is not a good hash key,
       // we are hashing by identity. but it should work here, and is required by
       // the org.ethereum.datasource.KeyValueDataSource
       val bulkmap = new java.util.HashMap[Array[Byte],Array[Byte]]();
@@ -65,11 +65,18 @@ class EthereumJTrie( kvds : KeyValueDataSource, rootHash : EthHash ) extends EJT
       kvds.updateBatch( bulkmap );
     }
   }
-  private class InnerTrie( newRootHash : EthHash ) extends {
-    val earlyInit = EmbeddableEthStylePMTrie.EarlyInit( EthTrieDb.Alphabet, innerDb, newRootHash );
-  } with EmbeddableEthStylePMTrie[Nibble,Seq[Byte],EthHash] {
+
+  private trait GenericEthTrie {
+    def apply( key : IndexedSeq[Nibble] )                        : Option[Seq[Byte]];
+    def including( key : IndexedSeq[Nibble], value : Seq[Byte] ) : GenericEthTrie;
+    def excluding( key : IndexedSeq[Nibble] )                    : GenericEthTrie;
+    def RootHash                                                 : EthHash;
+    def captureTrieDump                                          : String;
+  }
+  private class InnerTrie( newRootHash : EthHash ) extends AbstractEthTrie[InnerTrie]( innerDb, newRootHash ) with GenericEthTrie {
     def instantiateSuccessor( newRootHash : EthHash ) : InnerTrie =  new InnerTrie( newRootHash );
-    override def excluding( key : Subkey ) : InnerTrie = super.excluding( key ).asInstanceOf[InnerTrie];
-    override def including( key : Subkey, value : Seq[Byte] ) : InnerTrie = super.including( key, value ).asInstanceOf[InnerTrie];
+  }
+  private class InnerSecureTrie( newRootHash : EthHash ) extends AbstractEthSecureTrie[InnerSecureTrie]( innerDb, newRootHash ) with GenericEthTrie {
+    def instantiateSuccessor( newRootHash : EthHash ) : InnerSecureTrie =  new InnerSecureTrie( newRootHash );
   }
 }
