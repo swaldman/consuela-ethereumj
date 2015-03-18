@@ -25,10 +25,13 @@ class DirectEthereumJTrie( kvds : KeyValueDataSource, rootHash : Array[Byte], se
   private def _k( a : Array[Byte] ) : IndexedSeq[Nibble] = toNibbles( a.toSeq );
 
   def get( key : Array[Byte] ) : Array[Byte] = this.synchronized { 
-    innerTrie( _k( key ) ).fold( null.asInstanceOf[Array[Byte]] )( _.toArray ) 
+    innerTrie( _k( key ) ).fold( EthereumJTrie.DELETE_TOKEN )( _.toArray ) 
   }
   def update( key : Array[Byte], value : Array[Byte] ) : Unit = this.synchronized { 
-    innerTrie = innerTrie.including( _k( key ), value.toIndexedSeq );
+    if ( value.isEmpty )
+      delete( key )
+    else
+      innerTrie = innerTrie.including( _k( key ), value.toIndexedSeq );
   }
   def delete( key : Array[Byte] ) : Unit = this.synchronized {
     innerTrie = innerTrie.excluding( _k( key ) );
