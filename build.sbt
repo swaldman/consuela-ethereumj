@@ -30,7 +30,8 @@ publishTo <<= version {
 }
 
 libraryDependencies ++= Seq(
-  "com.mchange" %% "consuela" % "0.0.1-SNAPSHOT"
+  "com.mchange" %% "consuela" % "0.0.1-SNAPSHOT",
+  "org.iq80.leveldb" % "leveldb" % "0.7" % "compile,optional"
 )
 
 
