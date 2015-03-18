@@ -13,7 +13,7 @@ import org.ethereum.datasource.HashMapDB;
  */  
 class EthereumJTrieFactory extends TrieFactory {
   private def goodDb( db : KeyValueDataSource ) : KeyValueDataSource  = if ( db == null ) new HashMapDB else db;
-  def createSimpleTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new CacheWrapperEthereumJTrie( new DirectEthereumJTrie ( goodDb( db ), rootHash, false ) );
-  def createSecureTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new CacheWrapperEthereumJTrie( new DirectEthereumJTrie ( goodDb( db ), rootHash, true ) );
-  def createFatTrie( securedb: KeyValueDataSource, insecuredb :  KeyValueDataSource, rootHash : Array[Byte]) : FatTrie  = EthereumJFatTrie.createCached( insecuredb, securedb, rootHash );
+  def createSimpleTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new DirectEthereumJTrie ( goodDb( db ), rootHash, false );
+  def createSecureTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new DirectEthereumJTrie ( goodDb( db ), rootHash, true );
+  def createFatTrie( securedb: KeyValueDataSource, insecuredb :  KeyValueDataSource, rootHash : Array[Byte]) : FatTrie  = EthereumJFatTrie.createDirect( insecuredb, securedb, rootHash );
 }

@@ -12,6 +12,7 @@ import scala.collection._;
 //       without race conditions.
 
 class CacheWrapperEthereumJTrie( inner : EthereumJTrie ) extends EthereumJTrie {
+
   import EthereumJTrie.DELETE_TOKEN;
 
   val map : mutable.Map[mutable.WrappedArray[Byte], Array[Byte]] = mutable.HashMap.empty;
