@@ -11,6 +11,11 @@ object EthereumJTrie {
 }
 trait EthereumJTrie extends EJTrie {
   def copy() : EthereumJTrie;
-  def bulkUpdateDelete( pairs : Iterable[(Array[Byte],Array[Byte])] ) : Unit; 
+  def bulkUpdateDelete( pairs : Iterable[(Array[Byte],Array[Byte])] ) : Unit;
+
+  override def equals( obj : Any ) : Boolean = {
+    super.equals(obj) || (obj.isInstanceOf[EthereumJTrie] && (obj.asInstanceOf[EthereumJTrie].getRootHash.toSeq == this.getRootHash.toSeq))
+  }
+  override def hashCode() : Int = this.getRootHash.toSeq.hashCode()
 }
 
