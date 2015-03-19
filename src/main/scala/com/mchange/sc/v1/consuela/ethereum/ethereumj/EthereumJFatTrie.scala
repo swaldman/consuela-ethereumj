@@ -42,6 +42,8 @@ class EthereumJFatTrie private ( insecure : EthereumJTrie, secure : EthereumJTri
 
   def setRoot( newRootHash : Array[Byte] ) : Unit = this.synchronized {
     secure.setRoot( newRootHash );
+
+    // XXX: do we need to rebuild insecure so that it has the proper hash now?
   }
   def getTrieDump() : String = this.synchronized {
     secure.getTrieDump();
@@ -64,9 +66,7 @@ class EthereumJFatTrie private ( insecure : EthereumJTrie, secure : EthereumJTri
     return new EthereumJFatTrie( insecure.copy(), secure.copy(), this.getRootHash() );
   }
   def getOrigTrie() : EJTrie = this.synchronized {
-    val out = insecure.copy();
-    out.setRoot( this.getRootHash() );
-    out;
+    insecure.copy();
   }
   def getSecureTrie() : EJTrie = this.synchronized {
     secure.copy();
