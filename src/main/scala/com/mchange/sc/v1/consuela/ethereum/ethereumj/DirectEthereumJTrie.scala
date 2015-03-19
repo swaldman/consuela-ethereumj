@@ -7,7 +7,7 @@ import org.ethereum.datasource.KeyValueDataSource;
 
 import scala.Iterable;
 
-class DirectEthereumJTrie( kvds : KeyValueDataSource, rootHash : Array[Byte], secure : Boolean ) extends EthereumJTrie {
+class DirectEthereumJTrie( kvds : KeyValueDataSource, rootHash : Array[Byte], val secure : Boolean ) extends EthereumJTrie {
 
   def this( kvds : KeyValueDataSource, secure : Boolean )                              = this( kvds, EthTrieDb.EmptyHash.toByteArray, secure );
 
@@ -63,7 +63,7 @@ class DirectEthereumJTrie( kvds : KeyValueDataSource, rootHash : Array[Byte], se
   }
 
   def copy() : EthereumJTrie = this.synchronized {
-    if ( lastCheckpoint != innerTrie )
+    if ( lastCheckpoint.RootHash != innerTrie.RootHash )
       throw new IllegalStateException("We can't copy() a DirectEthereumJTrie with unsynced changes! Call sync() first!");
     else
       new DirectEthereumJTrie( kvds, innerTrie.RootHash.toByteArray, secure );
