@@ -8,7 +8,7 @@ import org.ethereum.datasource.KeyValueDataSource;
 import scala.Iterable;
 import scala.collection._;
 
-object DirectEthereumJTrie {
+object UnifiedEthereumJTrie {
   type EthNode = EmbeddableEthStylePMTrie.Node[Nibble,Seq[Byte],EthHash]
 
   trait InnerDb extends EthTrieDb with PMTrie.Database.BulkWriting[EthNode,EthHash] {
@@ -51,12 +51,12 @@ object DirectEthereumJTrie {
     def rollback() : Unit = ();
   }
 }
-class DirectEthereumJTrie private ( val innerDb : DirectEthereumJTrie.InnerDb, rootHash : Array[Byte], val secure : Boolean ) extends EthereumJTrie {
+class UnifiedEthereumJTrie private ( val innerDb : UnifiedEthereumJTrie.InnerDb, rootHash : Array[Byte], val secure : Boolean ) extends EthereumJTrie {
 
-  import DirectEthereumJTrie.EthNode;
+  import UnifiedEthereumJTrie.EthNode;
 
   def this( kvds : KeyValueDataSource, rootHash : Array[Byte], secure : Boolean, caching : Boolean ) = {
-    this( if ( caching ) new DirectEthereumJTrie.CachingDb( kvds ) else new DirectEthereumJTrie.DirectDb( kvds ), rootHash, secure );
+    this( if ( caching ) new UnifiedEthereumJTrie.CachingDb( kvds ) else new UnifiedEthereumJTrie.DirectDb( kvds ), rootHash, secure );
   }
 
   def this( kvds : KeyValueDataSource, secure : Boolean, caching : Boolean ) = this( kvds, EthTrieDb.EmptyHash.toByteArray, secure, caching );
@@ -73,7 +73,7 @@ class DirectEthereumJTrie private ( val innerDb : DirectEthereumJTrie.InnerDb, r
 
   private def _k( a : Array[Byte] ) : IndexedSeq[Nibble] = toNibbles( a.toSeq );
 
-  val caching : Boolean = innerDb.isInstanceOf[DirectEthereumJTrie.CachingDb];
+  val caching : Boolean = innerDb.isInstanceOf[UnifiedEthereumJTrie.CachingDb];
 
   def get( key : Array[Byte] ) : Array[Byte] = this.synchronized { 
     innerTrie( _k( key ) ).fold( EthereumJTrie.DELETE_TOKEN )( _.toArray ) 
@@ -116,7 +116,7 @@ class DirectEthereumJTrie private ( val innerDb : DirectEthereumJTrie.InnerDb, r
   }
 
   def copy() : EthereumJTrie = this.synchronized {
-    new DirectEthereumJTrie( innerDb, innerTrie.RootHash.toByteArray, secure );
+    new UnifiedEthereumJTrie( innerDb, innerTrie.RootHash.toByteArray, secure );
   }
 
   private trait GenericEthTrie {

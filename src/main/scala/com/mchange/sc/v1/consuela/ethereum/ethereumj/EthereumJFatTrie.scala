@@ -8,18 +8,14 @@ import org.ethereum.trie.{Trie => EJTrie};
 import org.ethereum.trie.FatTrie;
 
 object EthereumJFatTrie {
-  def createDirect( insecureKvds : KeyValueDataSource, secureKvds : KeyValueDataSource, rootHash : Array[Byte], caching : Boolean ) : EthereumJFatTrie = {
-    val insecure = new DirectEthereumJTrie( insecureKvds, rootHash, false, caching );
-    val secure   = new DirectEthereumJTrie(   secureKvds, rootHash, true, caching  );
+  def create( insecureKvds : KeyValueDataSource, secureKvds : KeyValueDataSource, rootHash : Array[Byte], caching : Boolean ) : EthereumJFatTrie = {
+    val insecure = new UnifiedEthereumJTrie( insecureKvds, rootHash, false, caching );
+    val secure   = new UnifiedEthereumJTrie(   secureKvds, rootHash, true, caching  );
     new EthereumJFatTrie( insecure, secure, rootHash )
   }
-  /*
-  def createCached( insecureKvds : KeyValueDataSource, secureKvds : KeyValueDataSource, rootHash : Array[Byte] ) : EthereumJFatTrie = {
-    val insecure = new CacheWrapperEthereumJTrie( new DirectEthereumJTrie( insecureKvds, rootHash, false ) );
-    val secure   = new CacheWrapperEthereumJTrie( new DirectEthereumJTrie(   secureKvds, rootHash, true  ) );
-    new EthereumJFatTrie( insecure, secure, rootHash )
+  def apply( insecureKvds : KeyValueDataSource, secureKvds : KeyValueDataSource, rootHash : Array[Byte], caching : Boolean ) : EthereumJFatTrie = {
+    create( insecureKvds, secureKvds, rootHash, caching )
   }
-  */ 
 }
 class EthereumJFatTrie private ( insecure : EthereumJTrie, secure : EthereumJTrie, rootHash : Array[Byte] ) extends EthereumJTrie with FatTrie {
 
