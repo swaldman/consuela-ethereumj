@@ -5,7 +5,7 @@ import com.mchange.sc.v1.consuela.ethereum.trie._;
 import com.mchange.sc.v1.consuela.trie._;
 import org.ethereum.datasource.KeyValueDataSource;
 import org.ethereum.trie.{Trie => EJTrie};
-import org.ethereum.trie.FatTrie;
+// import org.ethereum.trie.FatTrie;
 
 object EthereumJFatTrie {
   def create( insecureKvds : KeyValueDataSource, secureKvds : KeyValueDataSource, rootHash : Array[Byte], caching : Boolean ) : EthereumJFatTrie = {
@@ -17,7 +17,7 @@ object EthereumJFatTrie {
     create( insecureKvds, secureKvds, rootHash, caching )
   }
 }
-class EthereumJFatTrie private ( insecure : EthereumJTrie, secure : EthereumJTrie, rootHash : Array[Byte] ) extends EthereumJTrie with FatTrie {
+class EthereumJFatTrie private ( insecure : EthereumJTrie, secure : EthereumJTrie, rootHash : Array[Byte] ) extends EthereumJTrie /* with FatTrie */ {
 
   this.setRoot( rootHash );
 

@@ -10,13 +10,10 @@ import org.ethereum.datasource.HashMapDB;
 
 /**
  *  null values for KeyValueDataSources are acceptable: an in-memory test KeyValueDataSource should be supplied.
+ *  null values for rootHash are acceptable: EMPTY_TRIE_HASH will be used.
  */  
 class EthereumJTrieFactory extends TrieFactory {
   private def goodDb( db : KeyValueDataSource ) : KeyValueDataSource  = if ( db == null ) new MemoryOnlyKeyValueDataSource else db;
 
-  def createSimpleTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new UnifiedEthereumJTrie ( goodDb( db ), rootHash, secure=false, caching=true );
-  def createSecureTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new UnifiedEthereumJTrie ( goodDb( db ), rootHash, secure=true, caching=true );
-  def createFatTrie( securedb: KeyValueDataSource, insecuredb :  KeyValueDataSource, rootHash : Array[Byte]) : FatTrie  = {
-    EthereumJFatTrie.create( goodDb( insecuredb ), goodDb( securedb ), rootHash, caching=true );
-  }
+  def createTrie( db : KeyValueDataSource, rootHash : Array[Byte] ) : Trie = new UnifiedEthereumJTrie ( goodDb( db ), rootHash, secure=false, caching=true );
 }
